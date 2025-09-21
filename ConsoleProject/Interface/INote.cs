@@ -12,9 +12,11 @@ namespace ConsoleProject.Interface
         IEnumerable<Note> GetAllNotes(int userId);
 
         Note GetById(int id);
-        Note AddNote(string title, string noteDescription, User owner);
+        int GetIDNoteByTitle(string title);
+        Note AddNote(string title, string noteDescription, int noteUserId);
         void CompletedNote (int id);
         void ChangeNote (int id, string title, string noteDescription);
         void DeleteNote (int id);
+        void ShowNote(int id);
     }
 }

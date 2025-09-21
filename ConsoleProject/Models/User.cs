@@ -10,8 +10,5 @@ namespace ConsoleProject.Models
     {
         public string UserName { get; set; }
         public int UserId { get; set; }
-
-        public List<Note> Notes { get; set; } = new List<Note>();
-
     }
 }

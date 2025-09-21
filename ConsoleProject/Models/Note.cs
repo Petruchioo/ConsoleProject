@@ -13,7 +13,7 @@ namespace ConsoleProject.Models
         public string? NoteDescription { get; set; }
         public DateTime CreationTime { get; set; }
         public bool NoteIsCompleted { get; set; } = false;
-        public User Owner { get; set; }
+        public int NoteUserId { get; set; }
 
     }
 }

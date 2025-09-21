@@ -1,0 +1,11 @@
+All Comands
+-----------
+1. Registration
+2. Login
+3. Show all user notes
+4. Create a note
+5. Completed note
+6. Change note
+7. Delete note
+8. All Comand
+9. Exit

@@ -14,24 +14,33 @@ namespace ConsoleProject.Services
 {
     public class Service
     {
-        static readonly UserService _userService = new UserService();
-        static readonly NoteService _noteService = new NoteService();
-        private static User _currentUser;
-        public bool isRunnig = true;
+        private readonly IUser _userService;
+        private readonly INote _noteService;
+        private User _currentUser;
+        private bool isRunning = true;
 
-        private static readonly Dictionary<string, Action> _comands = new Dictionary<string, Action>
+        private readonly Dictionary<string, Action> _commands;
+
+        public Service(IUser userService, INote noteService)
         {
-            {"1", Registration},
-            {"2", Login},
-            {"3", GetAllNotes },
-            {"4", AddNote },
-            {"5", CompletedNote },
-            {"6", ChangeNote },
-            {"7", DeleteNote },
-            {"8", GetAllComand },
-            {"9", Exit }
-        };
-        public void Menu()
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _noteService = noteService ?? throw new ArgumentNullException(nameof(noteService));
+
+            _commands = new Dictionary<string, Action>
+            {
+                { "1", Registration },
+                { "2", Login },
+                { "3", GetAllNotes },
+                { "4", AddNote },
+                { "5", CompletedNote },
+                { "6", ChangeNote },
+                { "7", DeleteNote },
+                { "8", GetAllCommands },
+                { "9", Exit }
+            };
+        }
+
+        public void RunMenu()
         {
 
             bool isRunning = true;
@@ -39,16 +48,16 @@ namespace ConsoleProject.Services
             while (isRunning)
             {
                 Console.WriteLine(File.ReadAllText("AllComands.txt"));
-                Console.WriteLine("\nEnter team number");
+                Console.WriteLine("\nEnter command number");
                 string input = Console.ReadLine();
 
-                if (_comands.TryGetValue(input, out Action action))
+                if (_commands.TryGetValue(input, out Action action))
                 {
                     try
                     {
                         action.Invoke();
                         if (input == "9")
-                            isRunnig = false;
+                            isRunning = false;
                     }
                     catch (Exception ex) { Console.WriteLine("Error", ex); }
                 }
@@ -61,94 +70,99 @@ namespace ConsoleProject.Services
 
         }
 
-        public static void Registration()
+        public void Registration()
         {
             Console.Clear();
             Console.WriteLine(File.ReadAllText("RegistrationWindow.txt"));
 
             string input = Console.ReadLine();
 
-            try
-            {
-                _currentUser = _userService.Registration(input);
-                Console.WriteLine($"Welcome {input}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error registration", ex);
-            }
+            _currentUser = _userService.Registration(input);
+            Console.WriteLine($"Welcome {input}");
+
 
             Console.ReadKey();
         }
 
-        public static void Login()
+        public void Login()
         {
             Console.Clear();
             Console.WriteLine(File.ReadAllText("LoginWindow.txt"));
 
             string input = Console.ReadLine();
+            _currentUser = _userService.Login(input);
+            Console.WriteLine($"Welcome {input}");
 
-            try
-            {
-                _currentUser = _userService.Login(input);
-                Console.WriteLine($"Welcome {input}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error registration", ex);
-            }
+
 
             Console.ReadKey();
         }
 
-        public static void GetAllNotes()
+        public void GetAllNotes()
         {
             Console.Clear();
             Console.WriteLine($"All notes by {_currentUser.UserName}");
+            var notes = _noteService.GetAllNotes(_currentUser.UserId);
 
-            try
+            if (!notes.Any())
             {
-                var notes = _noteService.GetAllNotes(_currentUser.UserId);
-
-                if (!notes.Any())
+                Console.WriteLine("You have no notes");
+            }
+            else
+            {
+                foreach (var note in notes)
                 {
-                    Console.WriteLine("You have no notes");
+                    Console.WriteLine($"ID: {note.Id}");
+                    Console.WriteLine($"Title: {note.Title}");
+                    Console.WriteLine($"Description: {note.NoteDescription}");
+                    Console.WriteLine($"Status: {(note.NoteIsCompleted ? "Completed" : "No Compled")}");
+                    Console.WriteLine("-------------------");
+                }
+                Console.WriteLine("Select ID notes or press <<Enter>>");
+
+                var input = Console.ReadLine();
+
+                if (string.IsNullOrEmpty(input))
+                {
+                    return;
+                }
+
+                if (int.TryParse(input, out int selectedID))
+                {
+                    var selectedNote = notes.FirstOrDefault(note => note.Id == selectedID);
+                    if (selectedNote != null)
+                    {
+                        _noteService.ShowNote(selectedID);
+                    }
+                    else
+                    {
+                        Console.WriteLine("The note with the specified ID was not found");
+                    }
                 }
                 else
                 {
-                    foreach (var note in notes)
-                    {
-                        Console.WriteLine($"ID: {note.Id}");
-                        Console.WriteLine($"Title: {note.Title}");
-                        Console.WriteLine($"Description: {note.NoteDescription}");
-                        Console.WriteLine($"Status: {(note.NoteIsCompleted ? "Completed" : "No Compled")}");
-                        Console.WriteLine("-------------------");
-                    }
+                    Console.WriteLine("Incorrect input. Please enter a valid ID");
                 }
             }
-            catch (Exception ex) { Console.WriteLine("Error", ex); }
-
             Console.ReadKey();
+
         }
 
-        public static void AddNote()
+
+        public void AddNote()
         {
             Console.Clear();
             Console.Write($"New Note\nTitle:");
             string inputTitle = Console.ReadLine().Trim();
             Console.WriteLine("Description:");
             string inputDescription = Console.ReadLine().Trim();
-            try
-            {
 
-                _noteService.AddNote(inputTitle, inputDescription, _currentUser);
-            }
-            catch (Exception ex) { Console.WriteLine("Error", ex); }
+            _noteService.AddNote(inputTitle, inputDescription, _currentUser.UserId);
 
             Console.ReadKey();
         }
 
-        public static void CompletedNote()
+        public void CompletedNote()
         {
             Console.Clear();
             Console.WriteLine("Select the note you want to complete.\nAnd enter its Title");
@@ -159,16 +173,13 @@ namespace ConsoleProject.Services
 
             int noteId = _noteService.GetIDNoteByTitle(input);
 
-            try
-            {
-                _noteService.CompletedNote(noteId);
-            }
-            catch (Exception ex) { Console.WriteLine("Error", ex); }
+            _noteService.CompletedNote(noteId);
+
 
             Console.ReadKey();
         }
 
-        public static void ChangeNote()
+        public void ChangeNote()
         {
             Console.Clear();
             Console.WriteLine("Select the note you want to change.\nAnd enter its Title");
@@ -182,17 +193,12 @@ namespace ConsoleProject.Services
             Console.WriteLine($"New description note {input}");
             string inputDescription = Console.ReadLine();
 
-            try
-            {
-                _noteService.ChangeNote(noteId, input, inputDescription);
-            }
-            catch (Exception ex) { Console.WriteLine("Error", ex); }
-
+            _noteService.ChangeNote(noteId, input, inputDescription);
 
             Console.ReadKey();
         }
 
-        public static void DeleteNote()
+        public void DeleteNote()
         {
             Console.Clear();
             Console.WriteLine("Select the note you want to delete.\nAnd enter its Title");
@@ -203,44 +209,27 @@ namespace ConsoleProject.Services
 
             int noteId = _noteService.GetIDNoteByTitle(input);
 
-            try
-            {
-                _noteService.DeleteNote(noteId);
-            }
-            catch (Exception ex) { Console.WriteLine("Error", ex); }
+
+            _noteService.DeleteNote(noteId);
+
             Console.ReadKey();
         }
 
-        public static void GetAllComand()
+        public void GetAllCommands()
         {
             Console.Clear();
 
-            try
-            {
-                Console.WriteLine(File.ReadAllText("AllComands.txt"));
-            }
-            catch (Exception ex) { Console.WriteLine("Error", ex); }
+
+            Console.WriteLine(File.ReadAllText("AllComands.txt"));
+
 
             Console.ReadKey();
         }
 
-        public static void Exit()
+        public void Exit()
         {
             Console.Clear();
             Console.WriteLine("Completion of the program");
-        }
-        public void ValidateString(string value, string paramName)
-        {
-            if (string.IsNullOrEmpty(value))
-                throw new ArgumentException($"{paramName} cannot be empty", paramName);
-        }
-
-        public void ValidateStringLatin(string value, string paramName)
-        {
-            if (!Regex.IsMatch(value, @"^[a-zA-Z]+$"))
-            {
-                throw new ArgumentException($"{paramName} должен содержать только латинские буквы.", paramName);
-            }
         }
 
     }

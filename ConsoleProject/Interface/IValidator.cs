@@ -7,10 +7,11 @@ using ConsoleProject.Models;
 
 namespace ConsoleProject.Interface
 {
-    public interface IUser
+    public interface IValidator
     {
-        User Registration (string username);
-        User Login (string username);
-        User GetByUserId(int id);
+        void ValidateString(string value, string paramName);
+        
+
     }
+
 }

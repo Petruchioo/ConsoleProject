@@ -15,8 +15,10 @@ namespace ConsoleProject.Services
     {
         public List<Note> notes = new List<Note>();
         private string _noteFileName = "Notes.json";
-        static readonly UserService _userService = new UserService();
-        static readonly Service _service = new Service();
+        private readonly IUser _userService;
+        //static readonly UserService _userService = new UserService();
+        private readonly Interface.IValidator _service;
+        //static readonly Service _service = new Service();
 
         public IEnumerable<Note> GetAllNotes(int userId)
         {
@@ -24,7 +26,7 @@ namespace ConsoleProject.Services
                 throw new ArgumentNullException(nameof(userId), $"User with id {userId} not found");
 
             //return _notes.Where(n => n.Equals(userId)).ToList();
-            return notes.Where(n => n.Owner.UserId == userId).ToList();
+            return notes.Where(n => n.NoteUserId == userId).ToList();
         }
 
         public Note GetById(int id)
@@ -39,8 +41,8 @@ namespace ConsoleProject.Services
         }
 
         public int GetIDNoteByTitle(string title)
-        {  
-           _service.ValidateString(title, nameof(title));
+        {
+            _service.ValidateString(title, nameof(title));
 
             var note = notes.FirstOrDefault(n => n.Title == title);
             if (note is null) { throw new KeyNotFoundException($"Note {title} not found Exception"); }
@@ -48,9 +50,9 @@ namespace ConsoleProject.Services
             return note.Id;
         }
 
-        public Note AddNote(string title, string noteDescription, User owner)
+        public Note AddNote(string title, string noteDescription, int noteUserId)
         {
-            _service.ValidateString(title, nameof(title));
+           _service.ValidateString(title, nameof(title));
 
             if (notes.Any(n => n.Title == title))
             {
@@ -63,7 +65,7 @@ namespace ConsoleProject.Services
                 Title = title,
                 NoteDescription = noteDescription,
                 CreationTime = DateTime.Now,
-                Owner = owner
+                NoteUserId = noteUserId
             };
 
             try
@@ -81,7 +83,7 @@ namespace ConsoleProject.Services
         public void DeleteNote(int noteId)
         {
             var note = GetById(noteId);
-            if (note is null) throw new ArgumentNotFoundExceptions(noteId);
+            if (note is null) throw new NoteNotFoundExceptions(noteId);
 
             try
             {
@@ -94,7 +96,7 @@ namespace ConsoleProject.Services
         public void CompletedNote(int noteId)
         {
             var note = GetById(noteId);
-            if (note is null) throw new ArgumentNotFoundExceptions(noteId);
+            if (note is null) throw new NoteNotFoundExceptions(noteId);
 
             note.NoteIsCompleted = true;
             SaveNote();
@@ -152,5 +154,7 @@ namespace ConsoleProject.Services
                 Console.WriteLine($"Deserialization JSON error: {ex.Message}");
             }
         }
+
+
     }
 }

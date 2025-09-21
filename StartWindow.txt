@@ -1,0 +1,5 @@
+Welcome to program with notes!
+Select an action.
+_____________________________
+1. Registration
+2. Login

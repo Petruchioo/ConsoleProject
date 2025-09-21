@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace ConsoleProject.Exceptions
 {
-    internal class ArgumentNotFoundExceptions : Exception
+    internal class UserNotFoundException : Exception
     {
-        public ArgumentNotFoundExceptions(int id) : base($"ID = {id} is not found") { }
+        public UserNotFoundException(int id) : base($"User ID = {id} is not found") { }
     }
 }
