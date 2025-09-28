@@ -15,9 +15,16 @@ namespace ConsoleProject.Services
         public List<User> _users = new List<User>();
         private string _userFileName = "Users.json";
 
-        private readonly IValidator _stringValidator;
+        //private readonly IValidator _stringValidator;
 
+        //public UserService (IValidator stringValidator)
+        //{
+        //    _stringValidator = stringValidator;
+        //}
 
+        public UserService()
+        {
+        }
 
         public User GetByUserId(int userId)
         {
@@ -28,7 +35,7 @@ namespace ConsoleProject.Services
 
         public User Registration(string username)
         {
-            _stringValidator.ValidateString(username, nameof(username));
+            //_stringValidator.ValidateString(username, nameof(username));
             
 
             if (_users.Any(u => u.UserName == username))
@@ -55,7 +62,7 @@ namespace ConsoleProject.Services
 
         public User Login(string username)
         {
-            _stringValidator.ValidateString(username, nameof(username));
+            //_stringValidator.ValidateString(username, nameof(username));
             
 
             if (_users.Any(u => u.UserName != username))

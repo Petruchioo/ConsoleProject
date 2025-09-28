@@ -10,8 +10,6 @@ namespace ConsoleProject.Interface
     public interface IValidator
     {
         void ValidateString(string value, string paramName);
-        
-
     }
 
 }

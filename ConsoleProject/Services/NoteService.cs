@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using FluentValidation;
 using ConsoleProject.Interface;
 using ConsoleProject.Models;
 using ConsoleProject.Exceptions;
@@ -17,12 +16,23 @@ namespace ConsoleProject.Services
         private string _noteFileName = "Notes.json";
         private readonly IUser _userService;
         //static readonly UserService _userService = new UserService();
-        private readonly Interface.IValidator _service;
+
+        //private readonly IValidator _stringValidator;тест
+
         //static readonly Service _service = new Service();
+        public NoteService(IValidator stringValidator, IUser userService)
+        {
+            //_stringValidator = stringValidator;
+            _userService = userService;
+        }
+
+        public NoteService()
+        {
+        }
 
         public IEnumerable<Note> GetAllNotes(int userId)
         {
-            if (_userService.GetByUserId(userId) is null)
+            if (_userService.GetByUserId(userId) == null)
                 throw new ArgumentNullException(nameof(userId), $"User with id {userId} not found");
 
             //return _notes.Where(n => n.Equals(userId)).ToList();
@@ -42,7 +52,7 @@ namespace ConsoleProject.Services
 
         public int GetIDNoteByTitle(string title)
         {
-            _service.ValidateString(title, nameof(title));
+            //_stringValidator.ValidateString(title, nameof(title));
 
             var note = notes.FirstOrDefault(n => n.Title == title);
             if (note is null) { throw new KeyNotFoundException($"Note {title} not found Exception"); }
@@ -52,7 +62,7 @@ namespace ConsoleProject.Services
 
         public Note AddNote(string title, string noteDescription, int noteUserId)
         {
-           _service.ValidateString(title, nameof(title));
+           //_stringValidator.ValidateString(title, nameof(title));
 
             if (notes.Any(n => n.Title == title))
             {
@@ -104,7 +114,7 @@ namespace ConsoleProject.Services
 
         public void ChangeNote(int noteId, string title, string noteDescription)
         {
-            _service.ValidateString(title, nameof(title));
+            //_stringValidator.ValidateString(title, nameof(title));
 
             var note = GetById(noteId);
 

@@ -12,19 +12,14 @@ namespace ConsoleProject
 {
     internal class Program
     {
-        private static readonly Service _service;
-
-        static Program()
+        static void Main(string[] args)
         {
             IUser userService = new UserService();
             INote noteService = new NoteService();
 
-            _service = new Service(userService, noteService);
-        }
-        static void Main(string[] args)
-        {
+            var service = new Service(userService, noteService);
 
-            _service.RunMenu();
+            service.RunMenu();
         }
     }
 }
