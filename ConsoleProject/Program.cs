@@ -14,12 +14,14 @@ namespace ConsoleProject
     {
         static void Main(string[] args)
         {
-            IUser userService = new UserService();
-            INote noteService = new NoteService();
+            var stringValidator = new StringValidator();
+            var userService = new UserService (stringValidator);
+            var noteService = new NoteService (stringValidator, userService);
 
             var service = new Service(userService, noteService);
 
             service.RunMenu();
+
         }
     }
 }

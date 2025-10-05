@@ -15,19 +15,17 @@ namespace ConsoleProject.Services
         public List<User> _users = new List<User>();
         private string _userFileName = "Users.json";
 
-        //private readonly IValidator _stringValidator;
+        private readonly IValidator _validator;
 
-        //public UserService (IValidator stringValidator)
-        //{
-        //    _stringValidator = stringValidator;
-        //}
-
-        public UserService()
+        public UserService(IValidator validator)
         {
+            _validator = validator ?? throw new ArgumentNullException(nameof(validator));
         }
 
         public User GetByUserId(int userId)
         {
+            _users = MyDeserialize(_userFileName);
+
             var user = _users.FirstOrDefault(x => x.UserId == userId);
             if (user == null) { throw new UserNotFoundException(userId); }
             return user;
@@ -35,8 +33,10 @@ namespace ConsoleProject.Services
 
         public User Registration(string username)
         {
-            //_stringValidator.ValidateString(username, nameof(username));
-            
+            _validator.ValidateString(username, nameof(username));
+
+            _users = MyDeserialize(_userFileName);
+
 
             if (_users.Any(u => u.UserName == username))
             {
@@ -49,11 +49,7 @@ namespace ConsoleProject.Services
                 UserId = _users.Count + 1
             };
 
-            try
-            {
-                _users.Add(newUser);
-            }
-            catch (Exception ex) { Console.WriteLine($"Error from add User: {username}", ex); }
+            _users.Add(newUser);
 
             SaveUser();
 
@@ -62,16 +58,16 @@ namespace ConsoleProject.Services
 
         public User Login(string username)
         {
-            //_stringValidator.ValidateString(username, nameof(username));
-            
+            _validator.ValidateString(username, nameof(username));
 
-            if (_users.Any(u => u.UserName != username))
+            MyDeserialize(_userFileName);
+
+            if (_users.Any(u => u.UserName == username))
             {
-                throw new ArgumentException($"User with user name: {username} does not exists", nameof(username));
+                return _users.FirstOrDefault(x => x.UserName == username);
             }
-
-            var _currentUser = _users.FirstOrDefault(x => x.UserName == username);
-            return _currentUser;
+            else { throw new ArgumentException($"User with user name: {username} does not exists", nameof(username)); }
+            
         }
 
         public void SaveUser()
@@ -85,6 +81,14 @@ namespace ConsoleProject.Services
             catch (Exception ex) { throw new InvalidOperationException("Error from Save User", ex); }
         }
 
+        public List<User> MyDeserialize(string userFileName)
+        {
+            var json = File.ReadAllText(userFileName);
+            //var jsonListUser = new List<User>();
+            _users = JsonSerializer.Deserialize<List<User>>(json) ?? new List<User>();
+
+            return _users;
+        }
         //public void ShowUser(int userId)
         //{
         //    var user = GetByUserId(userId);

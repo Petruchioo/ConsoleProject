@@ -53,13 +53,11 @@ namespace ConsoleProject.Services
 
                 if (_commands.TryGetValue(input, out Action action))
                 {
-                    try
-                    {
-                        action.Invoke();
-                        if (input == "9")
-                            isRunning = false;
-                    }
-                    catch (Exception ex) { Console.WriteLine("Error", ex); }
+
+                    action.Invoke();
+                    if (input == "9")
+                        isRunning = false;
+
                 }
                 else
                 {
@@ -86,22 +84,34 @@ namespace ConsoleProject.Services
 
         public void Login()
         {
-            Console.Clear();
-            Console.WriteLine(File.ReadAllText("LoginWindow.txt"));
+            try
+            {
 
-            string input = Console.ReadLine();
-            _currentUser = _userService.Login(input);
-            Console.WriteLine($"Welcome {input}");
+                Console.Clear();
+                Console.WriteLine(File.ReadAllText("LoginWindow.txt"));
+
+                string input = Console.ReadLine();
+
+                _currentUser = _userService.Login(input);
+
+                Console.WriteLine($"Welcome {_currentUser.UserName}");
 
 
 
-            Console.ReadKey();
+                Console.ReadKey();
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine($"Ошибка регистрации: {ex.Message}");
+            }
+
         }
 
         public void GetAllNotes()
         {
             Console.Clear();
             Console.WriteLine($"All notes by {_currentUser.UserName}");
+
             var notes = _noteService.GetAllNotes(_currentUser.UserId);
 
             if (!notes.Any())
@@ -118,35 +128,11 @@ namespace ConsoleProject.Services
                     Console.WriteLine($"Status: {(note.NoteIsCompleted ? "Completed" : "No Compled")}");
                     Console.WriteLine("-------------------");
                 }
-                Console.WriteLine("Select ID notes or press <<Enter>>");
-
-                var input = Console.ReadLine();
-
-                if (string.IsNullOrEmpty(input))
-                {
-                    return;
-                }
-
-                if (int.TryParse(input, out int selectedID))
-                {
-                    var selectedNote = notes.FirstOrDefault(note => note.Id == selectedID);
-                    if (selectedNote != null)
-                    {
-                        _noteService.ShowNote(selectedID);
-                    }
-                    else
-                    {
-                        Console.WriteLine("The note with the specified ID was not found");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Incorrect input. Please enter a valid ID");
-                }
             }
             Console.ReadKey();
 
         }
+
 
 
         public void AddNote()
@@ -164,10 +150,11 @@ namespace ConsoleProject.Services
 
         public void CompletedNote()
         {
-            Console.Clear();
-            Console.WriteLine("Select the note you want to complete.\nAnd enter its Title");
 
             GetAllNotes();
+
+            Console.WriteLine("\nSelect the note you want to complete.\nAnd enter its Title");
+
 
             string input = Console.ReadLine();
 
@@ -181,10 +168,11 @@ namespace ConsoleProject.Services
 
         public void ChangeNote()
         {
-            Console.Clear();
+            GetAllNotes();
+
+            
             Console.WriteLine("Select the note you want to change.\nAnd enter its Title");
 
-            GetAllNotes();
 
             string input = Console.ReadLine();
 
@@ -200,10 +188,10 @@ namespace ConsoleProject.Services
 
         public void DeleteNote()
         {
-            Console.Clear();
-            Console.WriteLine("Select the note you want to delete.\nAnd enter its Title");
-
             GetAllNotes();
+            
+            Console.WriteLine("\nSelect the note you want to delete.\nAnd enter its Title");
+
 
             string input = Console.ReadLine();
 

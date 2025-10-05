@@ -17,6 +17,6 @@ namespace ConsoleProject.Interface
         void CompletedNote (int id);
         void ChangeNote (int id, string title, string noteDescription);
         void DeleteNote (int id);
-        void ShowNote(int id);
+        //void ShowNote(int id);
     }
 }
